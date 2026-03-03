@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ "{{" }} include "{{.ServiceName}}.fullname" . {{ "}}" }}
+  labels:
+    app: {{ "{{" }} include "{{.ServiceName}}.fullname" . {{ "}}" }}
+spec:
+  replicas: {{ "{{" }} .Values.replicaCount {{ "}}" }}
+  selector:
+    matchLabels:
+      app: {{ "{{" }} include "{{.ServiceName}}.fullname" . {{ "}}" }}
+  template:
+    metadata:
+      labels:
+        app: {{ "{{" }} include "{{.ServiceName}}.fullname" . {{ "}}" }}
+    spec:
+      containers:
+        - name: {{ "{{" }} .Chart.Name {{ "}}" }}
+          image: "{{ "{{" }} .Values.image.repository {{ "}}" }}:{{ "{{" }} .Values.image.tag | default .Chart.AppVersion {{ "}}" }}"
+          imagePullPolicy: {{ "{{" }} .Values.image.pullPolicy {{ "}}" }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+          {{ "{{" }}- range $key, $val := .Values.env {{ "}}" }}
+            - name: {{ "{{" }} $key {{ "}}" }}
+              value: {{ "{{" }} $val | quote {{ "}}" }}
+          {{ "{{" }}- end {{ "}}" }}
+          livenessProbe:
+            httpGet:
+              path: {{ "{{" }} .Values.probes.liveness.path {{ "}}" }}
+              port: {{ "{{" }} .Values.probes.liveness.port {{ "}}" }}
+          readinessProbe:
+            httpGet:
+              path: {{ "{{" }} .Values.probes.readiness.path {{ "}}" }}
+              port: {{ "{{" }} .Values.probes.readiness.port {{ "}}" }}

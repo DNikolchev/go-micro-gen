@@ -6,23 +6,29 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/fatih/color"
 	"github.com/Aro-M/go-micro-gen/internal/config"
 	"github.com/Aro-M/go-micro-gen/internal/generator"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 var (
-	flagName     string
-	flagModule   string
-	flagDB       string
-	flagArch     string
-	flagCI       string
-	flagRedis    bool
-	flagRedisSet bool
-	flagCloud    string
-	flagOutput   string
-	flagYes      bool // skip confirmation prompt (for CI / scripted usage)
+	flagName      string
+	flagModule    string
+	flagDB        string
+	flagArch      string
+	flagCI        string
+	flagRedis     bool
+	flagRedisSet  bool
+	flagDocker    bool
+	flagDockerSet bool
+	flagK8s       bool
+	flagK8sSet    bool
+	flagHelm      bool
+	flagHelmSet   bool
+	flagCloud     string
+	flagOutput    string
+	flagYes       bool // skip confirmation prompt (for CI / scripted usage)
 )
 
 var generateCmd = &cobra.Command{
@@ -40,11 +46,18 @@ func init() {
 	generateCmd.Flags().StringVar(&flagCI, "ci", "", "CI/CD: github | gitlab | none")
 	generateCmd.Flags().StringVar(&flagCloud, "cloud", "", "Cloud Provider: aws | gcp | none")
 	generateCmd.Flags().BoolVar(&flagRedis, "redis", false, "Include Redis")
+	generateCmd.Flags().BoolVar(&flagDocker, "docker", false, "Include Docker setup")
+	generateCmd.Flags().BoolVar(&flagK8s, "k8s", false, "Include Kubernetes manifests")
+	generateCmd.Flags().BoolVar(&flagHelm, "helm", false, "Include Helm charts")
 	generateCmd.Flags().StringVar(&flagOutput, "output", "", "Output directory")
 	generateCmd.Flags().BoolVarP(&flagYes, "yes", "y", false, "Skip confirmation prompt")
 
 	generateCmd.PreRun = func(cmd *cobra.Command, args []string) {
-		flagRedisSet = cmd.Flags().Changed("redis")
+		// Check if flags were explicitly set
+		flagRedisSet = generateCmd.Flags().Changed("redis")
+		flagDockerSet = generateCmd.Flags().Changed("docker")
+		flagK8sSet = generateCmd.Flags().Changed("k8s")
+		flagHelmSet = generateCmd.Flags().Changed("helm")
 	}
 }
 
@@ -67,6 +80,15 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := askRedis(cfg); err != nil {
+		return err
+	}
+	if err := askDocker(cfg); err != nil {
+		return err
+	}
+	if err := askK8s(cfg); err != nil {
+		return err
+	}
+	if err := askHelm(cfg); err != nil {
 		return err
 	}
 	if err := askCloud(cfg); err != nil {
@@ -169,6 +191,40 @@ func askRedis(cfg *config.ServiceConfig) error {
 	}, &cfg.IncludeRedis)
 }
 
+func askDocker(cfg *config.ServiceConfig) error {
+	if flagDockerSet {
+		cfg.IncludeDocker = flagDocker
+		return nil
+	}
+	return survey.AskOne(&survey.Confirm{
+		Message: "Include Docker & Docker Compose setup?",
+		Default: true,
+	}, &cfg.IncludeDocker)
+}
+
+func askK8s(cfg *config.ServiceConfig) error {
+	if flagK8sSet {
+		cfg.IncludeK8s = flagK8s
+		return nil
+	}
+	return survey.AskOne(&survey.Confirm{
+		Message: "Include Kubernetes manifests (Deployment, Service, etc.)?",
+		Default: false,
+	}, &cfg.IncludeK8s)
+}
+
+func askHelm(cfg *config.ServiceConfig) error {
+	if flagHelmSet {
+		cfg.IncludeHelm = flagHelm
+		return nil
+	}
+	// Need survey check
+	return survey.AskOne(&survey.Confirm{
+		Message: "Include Helm charts?",
+		Default: false,
+	}, &cfg.IncludeHelm)
+}
+
 func askCloud(cfg *config.ServiceConfig) error {
 	if flagCloud != "" {
 		cfg.Cloud = config.CloudProvider(flagCloud)
@@ -219,6 +275,9 @@ func printSummary(cfg *config.ServiceConfig) {
 	fmt.Printf("  %s  %s\n", bold("Arch:   "), cfg.Architecture)
 	fmt.Printf("  %s  %s\n", bold("DB:     "), cfg.Database)
 	fmt.Printf("  %s  %v\n", bold("Redis:  "), cfg.IncludeRedis)
+	fmt.Printf("  %s  %v\n", bold("Docker: "), cfg.IncludeDocker)
+	fmt.Printf("  %s  %v\n", bold("K8s:    "), cfg.IncludeK8s)
+	fmt.Printf("  %s  %v\n", bold("Helm:   "), cfg.IncludeHelm)
 	fmt.Printf("  %s  %s\n", bold("Cloud:  "), cfg.Cloud)
 	fmt.Printf("  %s  %s\n", bold("CI:     "), cfg.CI)
 	fmt.Printf("  %s  %s\n", bold("Output: "), cfg.OutputDir)

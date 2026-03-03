@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.ServiceName}}
+  labels:
+    app: {{.ServiceName}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{.ServiceName}}
+  template:
+    metadata:
+      labels:
+        app: {{.ServiceName}}
+    spec:
+      containers:
+        - name: {{.ServiceName}}
+          image: "your-registry/{{.ServiceName}}:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: {{.ServiceName}}-config
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10

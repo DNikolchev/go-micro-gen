@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.ServiceName}}-config
+data:
+  PORT: "8080"
+  LOG_LEVEL: "info"
+{{- if hasDB .Database}}
+  DATABASE_URL: "postgres://user:pass@postgres-svc:5432/{{.ServiceName}}?sslmode=disable"
+{{- end}}
+{{- if .IncludeRedis}}
+  REDIS_ADDR: "redis-svc:6379"
+{{- end}}

@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: "your-registry/{{.ServiceName}}"
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+
+env:
+  PORT: "8080"
+  LOG_LEVEL: "info"
+{{- if hasDB .Database}}
+  DATABASE_URL: "postgres://user:pass@postgres-svc:5432/{{.ServiceName}}?sslmode=disable"
+{{- end}}
+{{- if .IncludeRedis}}
+  REDIS_ADDR: "redis-svc:6379"
+{{- end}}
+
+probes:
+  liveness:
+    path: /health
+    port: 8080
+  readiness:
+    path: /ready
+    port: 8080

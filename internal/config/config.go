@@ -47,6 +47,12 @@ type ServiceConfig struct {
 	Database DBType
 	// Whether to include Redis
 	IncludeRedis bool
+	// Whether to include Docker assets
+	IncludeDocker bool
+	// Whether to include K8s
+	IncludeK8s bool
+	// Whether to include Helm
+	IncludeHelm bool
 	// Cloud provider
 	Cloud CloudProvider
 	// CI/CD provider

@@ -76,6 +76,17 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 		return false
 	}
 
+	// Infra templates (Docker, K8s, Helm)
+	if strings.Contains(tmplPath, "docker/") && !g.cfg.IncludeDocker {
+		return false
+	}
+	if strings.Contains(tmplPath, "k8s/") && !g.cfg.IncludeK8s {
+		return false
+	}
+	if strings.Contains(tmplPath, "helm/") && !g.cfg.IncludeHelm {
+		return false
+	}
+
 	// CI/CD templates
 	if strings.Contains(tmplPath, "github-actions") && g.cfg.CI != config.CIGitHub {
 		return false
