@@ -87,14 +87,14 @@ graph TD
 If you have Go installed, you can simply run:
 
 ```bash
-go install github.com/go-micro-gen/go-micro-gen@latest
+go install github.com/Aro-M/go-micro-gen@latest
 ```
 *Make sure `$(go env GOPATH)/bin` is in your system `$PATH`.*
 
 ### Method 2: Build from source
 
 ```bash
-git clone https://github.com/go-micro-gen/go-micro-gen
+git clone https://github.com/Aro-M/go-micro-gen
 cd go-micro-gen
 go build -o go-micro-gen ./cmd/...
 sudo mv go-micro-gen /usr/local/bin/

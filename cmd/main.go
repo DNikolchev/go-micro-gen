@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/go-micro-gen/go-micro-gen/internal/cli"
-	"github.com/go-micro-gen/go-micro-gen/internal/generator"
+	"github.com/Aro-M/go-micro-gen/internal/cli"
+	"github.com/Aro-M/go-micro-gen/internal/generator"
 )
 
 //go:embed all:templates

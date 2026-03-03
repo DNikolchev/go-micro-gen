@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/go-micro-gen/go-micro-gen/internal/config"
+	"github.com/Aro-M/go-micro-gen/internal/config"
 )
 
 // templateFS is set by the main package (via SetTemplateFS) using go:embed.

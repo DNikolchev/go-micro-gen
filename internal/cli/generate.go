@@ -7,8 +7,8 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
-	"github.com/go-micro-gen/go-micro-gen/internal/config"
-	"github.com/go-micro-gen/go-micro-gen/internal/generator"
+	"github.com/Aro-M/go-micro-gen/internal/config"
+	"github.com/Aro-M/go-micro-gen/internal/generator"
 	"github.com/spf13/cobra"
 )
 

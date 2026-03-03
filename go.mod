@@ -1,4 +1,4 @@
-module github.com/go-micro-gen/go-micro-gen
+module github.com/Aro-M/go-micro-gen
 
 go 1.25.7
 
