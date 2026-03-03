@@ -237,11 +237,10 @@ order-service/
 ## Roadmap
 
 - [ ] `go-micro-gen init` — inject structure into an existing project
-- [ ] `go-micro-gen add handler` — endpoint generation capability 
+- [x] `go-micro-gen add handler` — endpoint generation capability 
 - [ ] gRPC transport template
 - [x] Kubernetes manifests Generation (Deployment + Service + ConfigMap)
 - [x] Helm chart generation
-- [ ] Interactive bubbletea TUI
 
 ---
 

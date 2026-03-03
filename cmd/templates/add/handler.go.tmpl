@@ -1,0 +1,52 @@
+package httpx
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"{{.Config.ModulePath}}/internal/domain"
+)
+
+// {{title .Name}}Handler holds the HTTP handlers for {{.Name}}.
+type {{title .Name}}Handler struct {
+	// Add your dependencies here
+}
+
+// New{{title .Name}}Handler creates a new handler.
+func New{{title .Name}}Handler() *{{title .Name}}Handler {
+	return &{{title .Name}}Handler{}
+}
+
+// RegisterRoutes registers the {{.Name}} routes on the provided router.
+func (h *{{title .Name}}Handler) RegisterRoutes(r chi.Router) {
+	r.Route("{{.Route}}", func(r chi.Router) {
+		r.Post("/", h.create)
+		r.Get("/", h.list)
+		r.Get("/{id}", h.get)
+		r.Put("/{id}", h.update)
+		r.Delete("/{id}", h.delete)
+	})
+}
+
+// --- Handlers ---
+
+func (h *{{title .Name}}Handler) create(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+func (h *{{title .Name}}Handler) list(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+func (h *{{title .Name}}Handler) get(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+func (h *{{title .Name}}Handler) update(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+func (h *{{title .Name}}Handler) delete(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
