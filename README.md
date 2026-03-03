@@ -26,7 +26,7 @@
 Unlike a simple "Hello World" generator, `go-micro-gen` sets up an **entire ecosystem** ensuring you follow industry best practices right from the start.
 
 ### ✨ Key Features
-- ✅ **Clean / Hexagonal Architecture** layout
+- ✅ **Multi-Architecture** layouts: Clean, Hexagonal, Domain-Driven Design (DDD), Vertical Slice, and Standard
 - ✅ **OpenTelemetry** (traces + metrics) pre-configured
 - ✅ **Cleanenv** configuration manager
 - ✅ **PostgreSQL or MongoDB** implementations with the Repository Pattern
