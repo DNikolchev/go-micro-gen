@@ -46,7 +46,7 @@ func init() {
 	generateCmd.Flags().StringVar(&flagDB, "db", "", "Database type: postgres | mongo | none")
 	generateCmd.Flags().StringVar(&flagBroker, "broker", "", "Message Broker: kafka | rabbitmq | nats | none")
 	generateCmd.Flags().StringVar(&flagTransport, "transport", "", "Transport protocol: http | grpc | both")
-	generateCmd.Flags().StringVar(&flagArch, "arch", "", "Architecture: clean | hexagonal")
+	generateCmd.Flags().StringVar(&flagArch, "arch", "", "Architecture: clean | hexagonal | ddd | vertical | standard")
 	generateCmd.Flags().StringVar(&flagCI, "ci", "", "CI/CD: github | gitlab | none")
 	generateCmd.Flags().StringVar(&flagCloud, "cloud", "", "Cloud Provider: aws | gcp | none")
 	generateCmd.Flags().BoolVar(&flagRedis, "redis", false, "Include Redis")
@@ -168,7 +168,7 @@ func askArch(cfg *config.ServiceConfig) error {
 	var answer string
 	err := survey.AskOne(&survey.Select{
 		Message: "Architecture pattern:",
-		Options: []string{"clean", "hexagonal"},
+		Options: []string{"clean", "hexagonal", "ddd", "vertical", "standard"},
 		Default: "clean",
 	}, &answer)
 	cfg.Architecture = config.ArchType(answer)

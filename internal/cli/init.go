@@ -105,7 +105,7 @@ func init() {
 	initCmd.Flags().StringVar(&flagDB, "db", "", "Database type: postgres | mongo | none")
 	initCmd.Flags().StringVar(&flagBroker, "broker", "", "Message Broker: kafka | rabbitmq | nats | none")
 	initCmd.Flags().StringVar(&flagTransport, "transport", "", "Transport protocol: http | grpc | both")
-	initCmd.Flags().StringVar(&flagArch, "arch", "", "Architecture: clean | hexagonal")
+	initCmd.Flags().StringVar(&flagArch, "arch", "", "Architecture: clean | hexagonal | ddd | vertical | standard")
 	initCmd.Flags().StringVar(&flagCI, "ci", "", "CI/CD: github | gitlab | none")
 	initCmd.Flags().StringVar(&flagCloud, "cloud", "", "Cloud Provider: aws | gcp | none")
 	initCmd.Flags().BoolVar(&flagRedis, "redis", false, "Include Redis")

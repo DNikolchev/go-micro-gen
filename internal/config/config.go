@@ -43,6 +43,9 @@ type ArchType string
 const (
 	ArchClean     ArchType = "clean"
 	ArchHexagonal ArchType = "hexagonal"
+	ArchDDD       ArchType = "ddd"
+	ArchVertical  ArchType = "vertical"
+	ArchStandard  ArchType = "standard"
 )
 
 // CIType represents the CI/CD provider.
