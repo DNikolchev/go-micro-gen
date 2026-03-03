@@ -97,7 +97,7 @@ go install github.com/Aro-M/go-micro-gen@latest
 ```bash
 git clone https://github.com/Aro-M/go-micro-gen
 cd go-micro-gen
-go build -o go-micro-gen ./cmd/...
+go build -o go-micro-gen .
 sudo mv go-micro-gen /usr/local/bin/
 ```
 
