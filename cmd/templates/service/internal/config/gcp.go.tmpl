@@ -1,0 +1,20 @@
+{{- if eq .Cloud "gcp"}}
+package config
+
+import (
+	"context"
+	"log/slog"
+
+	"google.golang.org/api/option"
+)
+
+// InitGCP standardizes options for Google Cloud SDK initialization.
+func InitGCP(ctx context.Context, log *slog.Logger) ([]option.ClientOption, error) {
+	log.Info("initializing GCP configuration")
+	
+	// E.g., read credentials from a specific path if set, or rely on application default credentials
+	opts := []option.ClientOption{}
+	
+	return opts, nil
+}
+{{- end}}

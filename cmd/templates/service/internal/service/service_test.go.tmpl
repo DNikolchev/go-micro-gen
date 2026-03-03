@@ -1,0 +1,42 @@
+package service_test
+
+import (
+	"context"
+	"log/slog"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"{{.ModulePath}}/internal/domain"
+	"{{.ModulePath}}/internal/service"
+)
+
+func TestService_Create(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	ctx := context.Background()
+
+{{- if hasDB .Database}}
+	// TODO: Initialize a mock repository and inject it
+	// svc := service.New(mockRepo, logger)
+{{- else}}
+	svc := service.New(logger)
+
+	t.Run("success", func(t *testing.T) {
+		e := &domain.Example{Name: "test-name"}
+		result, err := svc.Create(ctx, e)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "test-name", result.Name)
+	})
+
+	t.Run("empty name", func(t *testing.T) {
+		e := &domain.Example{Name: ""}
+		result, err := svc.Create(ctx, e)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, "name is required", err.Error())
+	})
+{{- end}}
+}

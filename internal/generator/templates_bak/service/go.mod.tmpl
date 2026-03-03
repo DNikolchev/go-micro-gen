@@ -1,0 +1,20 @@
+module {{.ModulePath}}
+
+go {{.GoVersion}}
+
+require (
+	github.com/go-chi/chi/v5 v5.1.0
+{{- if isPostgres .Database}}
+	github.com/lib/pq v1.10.9
+{{- end}}
+{{- if isMongo .Database}}
+	go.mongodb.org/mongo-driver v1.15.0
+{{- end}}
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.57.0
+	go.opentelemetry.io/otel v1.32.0
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.32.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.32.0
+	go.opentelemetry.io/otel/sdk v1.32.0
+	go.opentelemetry.io/otel/sdk/metric v1.32.0
+	google.golang.org/grpc v1.68.0
+)

@@ -1,0 +1,94 @@
+SERVICE_NAME := {{.ServiceName}}
+BINARY_NAME  := $(SERVICE_NAME)
+BINARY_DIR   := bin
+CMD_PATH     := ./cmd/...
+GO_FLAGS     := CGO_ENABLED=0
+
+.PHONY: all build run test lint fmt clean up down logs help
+
+## help: Show this help message
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@grep -E '^## ' Makefile | sed 's/## /  /'
+
+## build: Build the binary
+build:
+	@echo "→ Building $(BINARY_NAME)..."
+	@mkdir -p $(BINARY_DIR)
+	$(GO_FLAGS) go build -ldflags="-w -s" -o $(BINARY_DIR)/$(BINARY_NAME) $(CMD_PATH)
+	@echo "✔ Binary: $(BINARY_DIR)/$(BINARY_NAME)"
+
+## run: Run the service locally (with .env loaded)
+run:
+	@echo "→ Running $(SERVICE_NAME)..."
+	@test -f .env && export $$(cat .env | xargs) ; go run $(CMD_PATH)
+
+## test: Run all tests with race detector
+test:
+	@echo "→ Running tests..."
+	@go test -v -race -count=1 ./...
+
+## test-coverage: Run tests and generate coverage report
+test-coverage:
+	@echo "→ Running tests with coverage..."
+	@go test -v -race -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "✔ Coverage report: coverage.html"
+
+## lint: Run golangci-lint
+lint:
+	@echo "→ Running linter..."
+	@golangci-lint run --timeout=5m ./...
+
+## fmt: Format all Go files
+fmt:
+	@echo "→ Formatting..."
+	@gofmt -w .
+	@goimports -w . 2>/dev/null || true
+
+## tidy: Tidy go.mod and go.sum
+tidy:
+	@echo "→ Tidying go.mod..."
+	@go mod tidy
+
+## up: Start all services with Docker Compose
+up:
+	@echo "→ Starting services..."
+	@docker compose -f docker/docker-compose.yml up -d
+	@echo ""
+	@echo "✔ Services ready!"
+	@echo "  App:        http://localhost:8080"
+	@echo "  Health:     http://localhost:8080/health"
+	@echo "  Prometheus: http://localhost:9090"
+	@echo "  Grafana:    http://localhost:3000"
+
+## down: Stop all services
+down:
+	@docker compose -f docker/docker-compose.yml down
+
+## logs: Tail service logs
+logs:
+	@docker compose -f docker/docker-compose.yml logs -f $(SERVICE_NAME)
+
+## clean: Remove build artifacts
+clean:
+	@rm -rf $(BINARY_DIR) coverage.out coverage.html
+
+{{- if isPostgres .Database}}
+## migrate-up: Run database migrations
+migrate-up:
+	@echo "→ Running database migrations..."
+	@if [ -f .env ]; then export $$(cat .env | grep -v '^#' | xargs); fi; \
+	migrate -path db/migrations -database "postgres://$${DB_USER:-postgres}:$${DB_PASSWORD:-postgres}@localhost:$${DB_PORT:-5432}/$${DB_NAME:-{{replace .ServiceName "-" "_"}}}?sslmode=disable" up
+
+## migrate-down: Revert database migrations
+migrate-down:
+	@echo "→ Reverting database migrations..."
+	@if [ -f .env ]; then export $$(cat .env | grep -v '^#' | xargs); fi; \
+	migrate -path db/migrations -database "postgres://$${DB_USER:-postgres}:$${DB_PASSWORD:-postgres}@localhost:$${DB_PORT:-5432}/$${DB_NAME:-{{replace .ServiceName "-" "_"}}}?sslmode=disable" down -all
+{{- end}}
+
+## docker-build: Build the Docker image
+docker-build:
+	@docker build -f docker/Dockerfile -t $(SERVICE_NAME):latest .

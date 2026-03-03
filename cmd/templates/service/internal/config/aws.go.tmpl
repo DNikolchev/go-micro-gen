@@ -1,0 +1,17 @@
+{{- if eq .Cloud "aws"}}
+package config
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+)
+
+// InitAWS loads default AWS config from environment variables and IAM roles.
+func InitAWS(ctx context.Context, log *slog.Logger) (aws.Config, error) {
+	log.Info("initializing AWS configuration")
+	return config.LoadDefaultConfig(ctx)
+}
+{{- end}}

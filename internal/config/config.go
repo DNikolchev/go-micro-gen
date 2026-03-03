@@ -1,0 +1,77 @@
+package config
+
+// DBType represents the type of database to use.
+type DBType string
+
+const (
+	DBPostgres DBType = "postgres"
+	DBMongo    DBType = "mongo"
+	DBNone     DBType = "none"
+)
+
+// CloudProvider represents the cloud provider.
+type CloudProvider string
+
+const (
+	CloudAWS  CloudProvider = "aws"
+	CloudGCP  CloudProvider = "gcp"
+	CloudNone CloudProvider = "none"
+)
+
+// ArchType represents the architecture pattern.
+type ArchType string
+
+const (
+	ArchClean     ArchType = "clean"
+	ArchHexagonal ArchType = "hexagonal"
+)
+
+// CIType represents the CI/CD provider.
+type CIType string
+
+const (
+	CIGitHub CIType = "github"
+	CIGitLab CIType = "gitlab"
+	CINone   CIType = "none"
+)
+
+// ServiceConfig holds all configuration for generating a new microservice.
+type ServiceConfig struct {
+	// ServiceName is the human-readable service name (e.g. "order-service")
+	ServiceName string
+	// ModulePath is the Go module path (e.g. "github.com/acme/order-service")
+	ModulePath string
+	// Architecture pattern to use
+	Architecture ArchType
+	// Database type
+	Database DBType
+	// Whether to include Redis
+	IncludeRedis bool
+	// Cloud provider
+	Cloud CloudProvider
+	// CI/CD provider
+	CI CIType
+	// OutputDir is the directory where the service will be generated
+	OutputDir string
+	// GoVersion to use in generated go.mod
+	GoVersion string
+}
+
+// PackageName returns a safe Go package name derived from ServiceName.
+func (c *ServiceConfig) PackageName() string {
+	name := ""
+	capitalize := false
+	for i, ch := range c.ServiceName {
+		if ch == '-' || ch == '_' {
+			capitalize = true
+			continue
+		}
+		if i == 0 || capitalize {
+			name += string([]rune{ch - 32})
+			capitalize = false
+		} else {
+			name += string(ch)
+		}
+	}
+	return name
+}

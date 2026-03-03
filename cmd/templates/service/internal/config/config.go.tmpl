@@ -1,0 +1,70 @@
+package config
+
+import (
+	"fmt"
+
+	"github.com/ilyakaznacheev/cleanenv"
+)
+
+// Config holds all configuration values loaded from environment variables.
+type Config struct {
+	// Service info
+	ServiceName string `env:"SERVICE_NAME" env-default:"{{.ServiceName}}"`
+	Version     string `env:"VERSION" env-default:"dev"`
+
+	// Server
+	Port int `env:"PORT" env-default:"8080"`
+
+	// Logging
+	LogLevel string `env:"LOG_LEVEL" env-default:"info"`
+
+	// OpenTelemetry
+	OTELEndpoint string `env:"OTEL_EXPORTER_OTLP_ENDPOINT" env-default:"otel-collector:4317"`
+
+{{- if isPostgres .Database}}
+	// PostgreSQL
+	DBHost     string `env:"DB_HOST" env-required:"true"`
+	DBPort     int    `env:"DB_PORT" env-default:"5432"`
+	DBName     string `env:"DB_NAME" env-required:"true"`
+	DBUser     string `env:"DB_USER" env-required:"true"`
+	DBPassword string `env:"DB_PASSWORD" env-required:"true"`
+	DBSSLMode  string `env:"DB_SSLMODE" env-default:"disable"`
+{{- end}}
+{{- if isMongo .Database}}
+	// MongoDB
+	MongoURI string `env:"MONGO_URI" env-required:"true"`
+	MongoDB  string `env:"MONGO_DB" env-required:"true"`
+{{- end}}
+{{- if .IncludeRedis}}
+	// Redis
+	RedisAddr     string `env:"REDIS_ADDR" env-required:"true"`
+	RedisPassword string `env:"REDIS_PASSWORD"`
+	RedisDB       int    `env:"REDIS_DB" env-default:"0"`
+{{- end}}
+{{- if eq .Cloud "aws"}}
+	// AWS settings
+	AWSRegion  string `env:"AWS_REGION" env-default:"us-east-1"`
+{{- end}}
+{{- if eq .Cloud "gcp"}}
+	// GCP settings
+	GCPProject string `env:"GCP_PROJECT" env-required:"true"`
+{{- end}}
+}
+
+// MustLoad loads configuration from environment variables.
+// Panics if a required variable is missing.
+func MustLoad() *Config {
+	var cfg Config
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
+		panic(fmt.Sprintf("failed to load config: %v", err))
+	}
+	return &cfg
+}
+
+{{- if isPostgres .Database}}
+// DSN returns the PostgreSQL connection string.
+func (c *Config) DSN() string {
+	return fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
+		c.DBHost, c.DBPort, c.DBName, c.DBUser, c.DBPassword, c.DBSSLMode)
+}
+{{- end}}

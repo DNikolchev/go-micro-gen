@@ -1,0 +1,29 @@
+package repository
+
+import (
+	"context"
+
+	"{{.ModulePath}}/internal/domain"
+)
+
+// Repository defines the storage contract for the service.
+// All database interactions MUST go through this interface — never call the DB directly from the service layer.
+type Repository interface {
+	// Create stores a new entity and returns it with the generated ID.
+	Create(ctx context.Context, e *domain.Example) (*domain.Example, error)
+
+	// GetByID retrieves an entity by its ID.
+	GetByID(ctx context.Context, id string) (*domain.Example, error)
+
+	// List returns all entities (add pagination as needed).
+	List(ctx context.Context) ([]*domain.Example, error)
+
+	// Update modifies an existing entity.
+	Update(ctx context.Context, e *domain.Example) (*domain.Example, error)
+
+	// Delete removes an entity by its ID.
+	Delete(ctx context.Context, id string) error
+
+	// Close releases any resources held by the repository (DB connections, etc.)
+	Close() error
+}

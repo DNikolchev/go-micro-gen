@@ -1,0 +1,99 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"{{.ModulePath}}/internal/config"
+	"{{.ModulePath}}/internal/service"
+{{- if hasDB .Database}}
+	"{{.ModulePath}}/internal/repository/{{.Database}}"
+{{- end}}
+	"{{.ModulePath}}/internal/transport/httpx"
+	"{{.ModulePath}}/pkg/health"
+	"{{.ModulePath}}/pkg/logger"
+	"{{.ModulePath}}/pkg/telemetry"
+)
+
+func main() {
+	// Load configuration
+	cfg := config.MustLoad()
+
+	// Initialize structured logger
+	log := logger.New(cfg.LogLevel)
+	slog.SetDefault(log)
+
+	// Initialize OpenTelemetry
+	otelShutdown, err := telemetry.Setup(context.Background(), "{{.ServiceName}}", cfg.OTELEndpoint)
+	if err != nil {
+		slog.Error("failed to setup OpenTelemetry", "error", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := otelShutdown(context.Background()); err != nil {
+			slog.Error("failed to shutdown OpenTelemetry", "error", err)
+		}
+	}()
+
+	slog.Info("starting {{.ServiceName}}", "version", cfg.Version, "port", cfg.Port)
+
+{{- if hasDB .Database}}
+	// Initialize repository
+	repo, err := {{.Database}}.NewRepository(cfg)
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	defer repo.Close()
+
+	// Initialize service
+	svc := service.New(repo, log)
+{{- else}}
+	// Initialize service (no database)
+	svc := service.New(log)
+{{- end}}
+
+	// Initialize HTTP router
+	router := httpx.NewRouter(svc, log)
+
+	// Add health endpoints
+	health.Register(router, cfg)
+
+	// Start HTTP server with graceful shutdown
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.Port),
+		Handler:      router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	// Start server in a goroutine
+	go func() {
+		slog.Info("HTTP server listening", "addr", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("HTTP server error", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	// Graceful shutdown on SIGINT / SIGTERM
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	slog.Info("shutting down gracefully...")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("server forced shutdown", "error", err)
+	}
+	slog.Info("server stopped")
+}

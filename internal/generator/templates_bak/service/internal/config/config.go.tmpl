@@ -1,0 +1,105 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
+
+// Config holds all configuration values loaded from environment variables.
+type Config struct {
+	// Service info
+	ServiceName string
+	Version     string
+
+	// Server
+	Port int
+
+	// Logging
+	LogLevel string
+
+	// OpenTelemetry
+	OTELEndpoint string
+
+{{- if isPostgres .Database}}
+	// PostgreSQL
+	DBHost     string
+	DBPort     int
+	DBName     string
+	DBUser     string
+	DBPassword string
+	DBSSLMode  string
+{{- end}}
+{{- if isMongo .Database}}
+	// MongoDB
+	MongoURI  string
+	MongoDB   string
+{{- end}}
+{{- if .IncludeRedis}}
+	// Redis
+	RedisAddr     string
+	RedisPassword string
+	RedisDB       int
+{{- end}}
+}
+
+// MustLoad loads configuration from environment variables.
+// Panics if a required variable is missing.
+func MustLoad() *Config {
+	return &Config{
+		ServiceName:  "{{.ServiceName}}",
+		Version:      getEnv("VERSION", "dev"),
+		Port:         getEnvInt("PORT", 8080),
+		LogLevel:     getEnv("LOG_LEVEL", "info"),
+		OTELEndpoint: getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "otel-collector:4317"),
+{{- if isPostgres .Database}}
+		DBHost:     mustGetEnv("DB_HOST"),
+		DBPort:     getEnvInt("DB_PORT", 5432),
+		DBName:     mustGetEnv("DB_NAME"),
+		DBUser:     mustGetEnv("DB_USER"),
+		DBPassword: mustGetEnv("DB_PASSWORD"),
+		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+{{- end}}
+{{- if isMongo .Database}}
+		MongoURI: mustGetEnv("MONGO_URI"),
+		MongoDB:  mustGetEnv("MONGO_DB"),
+{{- end}}
+{{- if .IncludeRedis}}
+		RedisAddr:     mustGetEnv("REDIS_ADDR"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisDB:       getEnvInt("REDIS_DB", 0),
+{{- end}}
+	}
+}
+
+{{- if isPostgres .Database}}
+// DSN returns the PostgreSQL connection string.
+func (c *Config) DSN() string {
+	return fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
+		c.DBHost, c.DBPort, c.DBName, c.DBUser, c.DBPassword, c.DBSSLMode)
+}
+{{- end}}
+
+func getEnv(key, defaultVal string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultVal
+}
+
+func mustGetEnv(key string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		panic(fmt.Sprintf("required environment variable %q is not set", key))
+	}
+	return v
+}
+
+func getEnvInt(key string, defaultVal int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
+		}
+	}
+	return defaultVal
+}

@@ -1,0 +1,36 @@
+package httpx_test
+
+import (
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"{{.ModulePath}}/internal/service"
+	"{{.ModulePath}}/internal/transport/httpx"
+)
+
+func TestHandler(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+{{- if hasDB .Database}}
+	// TODO: Inject mock repository into service
+	// svc := service.New(mockRepo, logger)
+{{- else}}
+	svc := service.New(logger)
+{{- end}}
+
+	router := httpx.NewRouter(svc, logger)
+
+	t.Run("list examples", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/examples", nil)
+		rr := httptest.NewRecorder()
+
+		router.ServeHTTP(rr, req)
+
+		assert.Equal(t, http.StatusOK, rr.Code)
+		// assert.JSONEq(t, `null`, rr.Body.String()) // Or expected array
+	})
+}

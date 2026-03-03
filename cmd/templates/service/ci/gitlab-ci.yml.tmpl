@@ -1,0 +1,42 @@
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  GO_VERSION: "{{.GoVersion}}"
+  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+
+lint:
+  stage: lint
+  image: golangci/golangci-lint:latest
+  script:
+    - golangci-lint run --timeout=5m ./...
+  cache:
+    key: go-mod-$CI_COMMIT_REF_SLUG
+    paths:
+      - .go/pkg/mod/
+
+test:
+  stage: test
+  image: golang:{{.GoVersion}}-alpine
+  script:
+    - go test -v -race -coverprofile=coverage.out ./...
+  coverage: '/coverage: \d+\.\d+% of statements/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker build -f docker/Dockerfile -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
+  only:
+    - main
+    - tags

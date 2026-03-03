@@ -1,0 +1,255 @@
+package cli
+
+import (
+	"fmt"
+	"runtime"
+	"strings"
+
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/fatih/color"
+	"github.com/go-micro-gen/go-micro-gen/internal/config"
+	"github.com/go-micro-gen/go-micro-gen/internal/generator"
+	"github.com/spf13/cobra"
+)
+
+var (
+	flagName     string
+	flagModule   string
+	flagDB       string
+	flagArch     string
+	flagCI       string
+	flagRedis    bool
+	flagRedisSet bool
+	flagCloud    string
+	flagOutput   string
+	flagYes      bool // skip confirmation prompt (for CI / scripted usage)
+)
+
+var generateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Generate a new production-ready Go microservice",
+	Long:  "Interactively scaffold a fully-wired microservice with Observability, DB, Docker, CI/CD and more.",
+	RunE:  runGenerate,
+}
+
+func init() {
+	generateCmd.Flags().StringVar(&flagName, "name", "", "Service name (e.g. order-service)")
+	generateCmd.Flags().StringVar(&flagModule, "module", "", "Go module path (e.g. github.com/acme/order-service)")
+	generateCmd.Flags().StringVar(&flagDB, "db", "", "Database type: postgres | mongo | none")
+	generateCmd.Flags().StringVar(&flagArch, "arch", "", "Architecture: clean | hexagonal")
+	generateCmd.Flags().StringVar(&flagCI, "ci", "", "CI/CD: github | gitlab | none")
+	generateCmd.Flags().StringVar(&flagCloud, "cloud", "", "Cloud Provider: aws | gcp | none")
+	generateCmd.Flags().BoolVar(&flagRedis, "redis", false, "Include Redis")
+	generateCmd.Flags().StringVar(&flagOutput, "output", "", "Output directory")
+	generateCmd.Flags().BoolVarP(&flagYes, "yes", "y", false, "Skip confirmation prompt")
+
+	generateCmd.PreRun = func(cmd *cobra.Command, args []string) {
+		flagRedisSet = cmd.Flags().Changed("redis")
+	}
+}
+
+func runGenerate(cmd *cobra.Command, args []string) error {
+	cfg := &config.ServiceConfig{
+		GoVersion: goVersion(),
+	}
+
+	// --- Collect inputs (interactive if flag not provided) ---
+	if err := askName(cfg); err != nil {
+		return err
+	}
+	if err := askModule(cfg); err != nil {
+		return err
+	}
+	if err := askArch(cfg); err != nil {
+		return err
+	}
+	if err := askDB(cfg); err != nil {
+		return err
+	}
+	if err := askRedis(cfg); err != nil {
+		return err
+	}
+	if err := askCloud(cfg); err != nil {
+		return err
+	}
+	if err := askCI(cfg); err != nil {
+		return err
+	}
+	if err := askOutput(cfg); err != nil {
+		return err
+	}
+
+	// --- Summary + Confirmation ---
+	printSummary(cfg)
+
+	if !flagYes {
+		confirm := false
+		if err := survey.AskOne(&survey.Confirm{
+			Message: "Generate service with these settings?",
+			Default: true,
+		}, &confirm); err != nil || !confirm {
+			color.Yellow("Aborted.")
+			return nil
+		}
+	}
+
+	// --- Generate ---
+	g := generator.New(cfg)
+	color.Cyan("\n🚀 Generating %s ...\n", cfg.ServiceName)
+	if err := g.Generate(); err != nil {
+		color.Red("❌ Generation failed: %v", err)
+		return err
+	}
+
+	printSuccess(cfg)
+	return nil
+}
+
+func askName(cfg *config.ServiceConfig) error {
+	if flagName != "" {
+		cfg.ServiceName = flagName
+		return nil
+	}
+	return survey.AskOne(&survey.Input{
+		Message: "Service name:",
+		Help:    "Lowercase, hyphenated (e.g. order-service)",
+	}, &cfg.ServiceName, survey.WithValidator(survey.Required))
+}
+
+func askModule(cfg *config.ServiceConfig) error {
+	if flagModule != "" {
+		cfg.ModulePath = flagModule
+		return nil
+	}
+	defaultModule := fmt.Sprintf("github.com/acme/%s", cfg.ServiceName)
+	return survey.AskOne(&survey.Input{
+		Message: "Go module path:",
+		Default: defaultModule,
+	}, &cfg.ModulePath, survey.WithValidator(survey.Required))
+}
+
+func askArch(cfg *config.ServiceConfig) error {
+	if flagArch != "" {
+		cfg.Architecture = config.ArchType(flagArch)
+		return nil
+	}
+	var answer string
+	err := survey.AskOne(&survey.Select{
+		Message: "Architecture pattern:",
+		Options: []string{"clean", "hexagonal"},
+		Default: "clean",
+	}, &answer)
+	cfg.Architecture = config.ArchType(answer)
+	return err
+}
+
+func askDB(cfg *config.ServiceConfig) error {
+	if flagDB != "" {
+		cfg.Database = config.DBType(flagDB)
+		return nil
+	}
+	var answer string
+	err := survey.AskOne(&survey.Select{
+		Message: "Database:",
+		Options: []string{"postgres", "mongo", "none"},
+		Default: "postgres",
+	}, &answer)
+	cfg.Database = config.DBType(answer)
+	return err
+}
+
+func askRedis(cfg *config.ServiceConfig) error {
+	if flagRedisSet {
+		cfg.IncludeRedis = flagRedis
+		return nil
+	}
+	return survey.AskOne(&survey.Confirm{
+		Message: "Include Redis?",
+		Default: false,
+	}, &cfg.IncludeRedis)
+}
+
+func askCloud(cfg *config.ServiceConfig) error {
+	if flagCloud != "" {
+		cfg.Cloud = config.CloudProvider(flagCloud)
+		return nil
+	}
+	var answer string
+	err := survey.AskOne(&survey.Select{
+		Message: "Cloud provider:",
+		Options: []string{"aws", "gcp", "none"},
+		Default: "none",
+	}, &answer)
+	cfg.Cloud = config.CloudProvider(answer)
+	return err
+}
+
+func askCI(cfg *config.ServiceConfig) error {
+	if flagCI != "" {
+		cfg.CI = config.CIType(flagCI)
+		return nil
+	}
+	var answer string
+	err := survey.AskOne(&survey.Select{
+		Message: "CI/CD provider:",
+		Options: []string{"github", "gitlab", "none"},
+		Default: "github",
+	}, &answer)
+	cfg.CI = config.CIType(answer)
+	return err
+}
+
+func askOutput(cfg *config.ServiceConfig) error {
+	if flagOutput != "" {
+		cfg.OutputDir = flagOutput
+		return nil
+	}
+	defaultOut := "./" + cfg.ServiceName
+	return survey.AskOne(&survey.Input{
+		Message: "Output directory:",
+		Default: defaultOut,
+	}, &cfg.OutputDir)
+}
+
+func printSummary(cfg *config.ServiceConfig) {
+	bold := color.New(color.Bold).SprintFunc()
+	fmt.Println()
+	fmt.Printf("  %s  %s\n", bold("Service:"), cfg.ServiceName)
+	fmt.Printf("  %s  %s\n", bold("Module: "), cfg.ModulePath)
+	fmt.Printf("  %s  %s\n", bold("Arch:   "), cfg.Architecture)
+	fmt.Printf("  %s  %s\n", bold("DB:     "), cfg.Database)
+	fmt.Printf("  %s  %v\n", bold("Redis:  "), cfg.IncludeRedis)
+	fmt.Printf("  %s  %s\n", bold("Cloud:  "), cfg.Cloud)
+	fmt.Printf("  %s  %s\n", bold("CI:     "), cfg.CI)
+	fmt.Printf("  %s  %s\n", bold("Output: "), cfg.OutputDir)
+	fmt.Println()
+}
+
+func printSuccess(cfg *config.ServiceConfig) {
+	green := color.New(color.FgGreen, color.Bold).SprintFunc()
+	cyan := color.New(color.FgCyan).SprintFunc()
+	fmt.Println()
+	fmt.Println(green("✅ Service generated successfully!"))
+	fmt.Println()
+	fmt.Println("  Next steps:")
+	fmt.Printf("    %s\n", cyan(fmt.Sprintf("cd %s", cfg.OutputDir)))
+	fmt.Printf("    %s\n", cyan("make up          # Start all services with Docker Compose"))
+	fmt.Printf("    %s\n", cyan("make run         # Run the service locally"))
+	fmt.Printf("    %s\n", cyan("make test        # Run tests"))
+	fmt.Printf("    %s\n", cyan("make lint        # Run golangci-lint"))
+	fmt.Println()
+	fmt.Printf("  Grafana:    %s\n", cyan("http://localhost:3000  (admin/admin)"))
+	fmt.Printf("  Prometheus: %s\n", cyan("http://localhost:9090"))
+	fmt.Printf("  Service:    %s\n", cyan("http://localhost:8080"))
+	fmt.Println()
+}
+
+func goVersion() string {
+	v := runtime.Version() // e.g. "go1.22.0"
+	v = strings.TrimPrefix(v, "go")
+	parts := strings.Split(v, ".")
+	if len(parts) >= 2 {
+		return parts[0] + "." + parts[1]
+	}
+	return "1.22"
+}
