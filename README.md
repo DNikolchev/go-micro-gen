@@ -121,12 +121,15 @@ go-micro-gen generate
 
 You'll see an interactive interface like this:
 
-```
+```text
 ? Service name:          order-service
 ? Go module path:        github.com/acme/order-service
 ? Architecture pattern:  [clean / hexagonal]
 ? Database:              [postgres / mongo / none]
 ? Include Redis?         (y/N)
+? Include Docker setup?  (Y/n)
+? Include Kubernetes?    (y/N)
+? Include Helm charts?   (y/N)
 ? Cloud provider:        [aws / gcp / none]
 ? CI/CD provider:        [github / gitlab / none]
 ? Output directory:      ./order-service
@@ -136,6 +139,9 @@ You'll see an interactive interface like this:
   Arch:     clean
   DB:       postgres
   Redis:    false
+  Docker:   true
+  K8s:      false
+  Helm:     false
   Cloud:    aws
   CI:       github
   Output:   ./order-service
@@ -158,6 +164,9 @@ go-micro-gen generate \
   --cloud aws \
   --ci github \
   --redis \
+  --docker \
+  --k8s \
+  --helm \
   --output ./payment-service \
   --yes
 ```
@@ -230,8 +239,8 @@ order-service/
 - [ ] `go-micro-gen init` — inject structure into an existing project
 - [ ] `go-micro-gen add handler` — endpoint generation capability 
 - [ ] gRPC transport template
-- [ ] Kubernetes manifests Generation (Deployment + Service + HPA)
-- [ ] Helm chart generation
+- [x] Kubernetes manifests Generation (Deployment + Service + ConfigMap)
+- [x] Helm chart generation
 - [ ] Interactive bubbletea TUI
 
 ---
