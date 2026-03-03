@@ -16,6 +16,9 @@ import (
 	"{{.ModulePath}}/internal/repository/{{.Database}}"
 {{- end}}
 	"{{.ModulePath}}/internal/transport/httpx"
+{{- if hasBroker .Broker}}
+	"{{.ModulePath}}/internal/broker/{{.Broker}}"
+{{- end}}
 	"{{.ModulePath}}/pkg/health"
 	"{{.ModulePath}}/pkg/logger"
 	"{{.ModulePath}}/pkg/telemetry"
@@ -72,6 +75,16 @@ func main() {
 {{- else}}
 	// Initialize service (no database)
 	svc := service.New(log)
+{{- end}}
+
+{{- if hasBroker .Broker}}
+	// Initialize Message Broker
+	brokerClient, err := {{.Broker}}.NewClient(cfg, log)
+	if err != nil {
+		slog.Error("failed to connect to message broker", "error", err)
+		os.Exit(1)
+	}
+	defer brokerClient.Close()
 {{- end}}
 
 	// Initialize HTTP router

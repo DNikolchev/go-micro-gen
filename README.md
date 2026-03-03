@@ -30,6 +30,7 @@ Unlike a simple "Hello World" generator, `go-micro-gen` sets up an **entire ecos
 - ✅ **OpenTelemetry** (traces + metrics) pre-configured
 - ✅ **Cleanenv** configuration manager
 - ✅ **PostgreSQL or MongoDB** implementations with the Repository Pattern
+- ✅ **Message Broker** support (Kafka, RabbitMQ, NATS)
 - ✅ **Cloud Provider Support** boilerplate (AWS & GCP)
 - ✅ **Database Migrations** out of the box (with `golang-migrate`)
 - ✅ **Docker & Docker-Compose** (App + DB + Redis + Prometheus + Grafana)

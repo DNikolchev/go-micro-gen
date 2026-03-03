@@ -1,0 +1,26 @@
+package rabbitmq
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"{{.ModulePath}}/internal/config"
+)
+
+// Client represents a dummy RabbitMQ connection.
+type Client struct {
+	log *slog.Logger
+}
+
+// NewClient initializes a connection to RabbitMQ.
+func NewClient(cfg *config.ServiceConfig, log *slog.Logger) (*Client, error) {
+	log.Info("connecting to RabbitMQ", "broker", "amqp://guest:guest@localhost:5672/")
+	return &Client{log: log}, nil
+}
+
+// Close closes the RabbitMQ connection.
+func (c *Client) Close() error {
+	c.log.Info("closing RabbitMQ connection")
+	return nil
+}

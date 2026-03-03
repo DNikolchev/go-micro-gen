@@ -68,6 +68,17 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 		return false
 	}
 
+	// Message Broker templates
+	if strings.Contains(tmplPath, "/broker/kafka/") && g.cfg.Broker != config.BrokerKafka {
+		return false
+	}
+	if strings.Contains(tmplPath, "/broker/rabbitmq/") && g.cfg.Broker != config.BrokerRabbitMQ {
+		return false
+	}
+	if strings.Contains(tmplPath, "/broker/nats/") && g.cfg.Broker != config.BrokerNATS {
+		return false
+	}
+
 	// Cloud-specific templates
 	if strings.Contains(tmplPath, "config/aws.go") && g.cfg.Cloud != config.CloudAWS {
 		return false
@@ -178,5 +189,9 @@ func templateFuncs() template.FuncMap {
 		"isMongo":    func(db config.DBType) bool { return db == config.DBMongo },
 		"isNoDB":     func(db config.DBType) bool { return db == config.DBNone },
 		"hasDB":      func(db config.DBType) bool { return db != config.DBNone },
+		"isKafka":    func(b config.BrokerType) bool { return b == config.BrokerKafka },
+		"isRabbitMQ": func(b config.BrokerType) bool { return b == config.BrokerRabbitMQ },
+		"isNATS":     func(b config.BrokerType) bool { return b == config.BrokerNATS },
+		"hasBroker":  func(b config.BrokerType) bool { return b != config.BrokerNone && b != "" },
 	}
 }

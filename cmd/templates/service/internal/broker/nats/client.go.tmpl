@@ -1,0 +1,26 @@
+package nats
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"{{.ModulePath}}/internal/config"
+)
+
+// Client represents a dummy NATS connection.
+type Client struct {
+	log *slog.Logger
+}
+
+// NewClient initializes a connection to NATS.
+func NewClient(cfg *config.ServiceConfig, log *slog.Logger) (*Client, error) {
+	log.Info("connecting to NATS", "broker", "nats://localhost:4222")
+	return &Client{log: log}, nil
+}
+
+// Close closes the NATS connection.
+func (c *Client) Close() error {
+	c.log.Info("closing NATS connection")
+	return nil
+}

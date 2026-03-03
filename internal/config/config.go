@@ -9,6 +9,16 @@ const (
 	DBNone     DBType = "none"
 )
 
+// BrokerType represents the message broker to use.
+type BrokerType string
+
+const (
+	BrokerKafka    BrokerType = "kafka"
+	BrokerRabbitMQ BrokerType = "rabbitmq"
+	BrokerNATS     BrokerType = "nats"
+	BrokerNone     BrokerType = "none"
+)
+
 // CloudProvider represents the cloud provider.
 type CloudProvider string
 
@@ -45,6 +55,8 @@ type ServiceConfig struct {
 	Architecture ArchType
 	// Database type
 	Database DBType
+	// Message broker type
+	Broker BrokerType
 	// Whether to include Redis
 	IncludeRedis bool
 	// Whether to include Docker assets
