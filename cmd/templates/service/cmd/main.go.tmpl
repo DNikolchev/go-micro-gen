@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
+{{- if isHTTP .Transport}}
 	"net/http"
+{{- end}}
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,7 +18,13 @@ import (
 {{- if hasDB .Database}}
 	"{{.ModulePath}}/internal/repository/{{.Database}}"
 {{- end}}
+{{- if isHTTP .Transport}}
 	"{{.ModulePath}}/internal/transport/httpx"
+{{- end}}
+{{- if isGRPC .Transport}}
+	"{{.ModulePath}}/internal/transport/grpc"
+	grpc_lib "google.golang.org/grpc"
+{{- end}}
 {{- if hasBroker .Broker}}
 	"{{.ModulePath}}/internal/broker/{{.Broker}}"
 {{- end}}
@@ -87,6 +96,7 @@ func main() {
 	defer brokerClient.Close()
 {{- end}}
 
+{{- if isHTTP .Transport}}
 	// Initialize HTTP router
 	router := httpx.NewRouter(svc, log)
 
@@ -94,7 +104,7 @@ func main() {
 	health.Register(router, cfg)
 
 	// Start HTTP server with graceful shutdown
-	srv := &http.Server{
+	httpSrv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
@@ -104,12 +114,31 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		slog.Info("HTTP server listening", "addr", srv.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		slog.Info("HTTP server listening", "addr", httpSrv.Addr)
+		if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("HTTP server error", "error", err)
 			os.Exit(1)
 		}
 	}()
+{{- end}}
+
+{{- if isGRPC .Transport}}
+	// Initialize gRPC Server
+	grpcSrv := grpc.NewServer(svc, log)
+	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port+1000))
+	if err != nil {
+		slog.Error("failed to listen for gRPC", "error", err)
+		os.Exit(1)
+	}
+	
+	go func() {
+		slog.Info("gRPC server listening", "addr", grpcLis.Addr())
+		if err := grpcSrv.Serve(grpcLis); err != nil {
+			slog.Error("gRPC server error", "error", err)
+			os.Exit(1)
+		}
+	}()
+{{- end}}
 
 	// Graceful shutdown on SIGINT / SIGTERM
 	quit := make(chan os.Signal, 1)
@@ -117,11 +146,16 @@ func main() {
 	<-quit
 
 	slog.Info("shutting down gracefully...")
+{{- if isHTTP .Transport}}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		slog.Error("server forced shutdown", "error", err)
+	if err := httpSrv.Shutdown(ctx); err != nil {
+		slog.Error("HTTP server forced shutdown", "error", err)
 	}
+{{- end}}
+{{- if isGRPC .Transport}}
+	grpcSrv.GracefulStop()
+{{- end}}
 	slog.Info("server stopped")
 }

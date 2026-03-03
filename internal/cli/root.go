@@ -32,4 +32,5 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(initCmd)
 }

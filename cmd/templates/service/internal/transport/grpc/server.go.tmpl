@@ -1,0 +1,27 @@
+package grpc
+
+import (
+	"context"
+	"log/slog"
+	"net"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"{{.ModulePath}}/internal/service"
+)
+
+// Server holds the gRPC server dependencies.
+type Server struct {
+	svc *service.Service
+	log *slog.Logger
+}
+
+// NewServer creates a new gRPC server.
+func NewServer(svc *service.Service, log *slog.Logger) *grpc.Server {
+	s := grpc.NewServer()
+	// Register your gRPC service implementation here:
+	// pb.RegisterYourServiceServer(s, &Server{svc: svc, log: log})
+	
+	reflection.Register(s)
+	return s
+}

@@ -19,6 +19,15 @@ const (
 	BrokerNone     BrokerType = "none"
 )
 
+// TransportType represents the primary service transport.
+type TransportType string
+
+const (
+	TransportHTTP TransportType = "http"
+	TransportGRPC TransportType = "grpc"
+	TransportBoth TransportType = "both"
+)
+
 // CloudProvider represents the cloud provider.
 type CloudProvider string
 
@@ -57,6 +66,8 @@ type ServiceConfig struct {
 	Database DBType
 	// Message broker type
 	Broker BrokerType
+	// Transport type (http, grpc, both)
+	Transport TransportType
 	// Whether to include Redis
 	IncludeRedis bool
 	// Whether to include Docker assets

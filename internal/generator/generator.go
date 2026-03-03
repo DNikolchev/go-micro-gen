@@ -87,6 +87,14 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 		return false
 	}
 
+	// Transport templates
+	if strings.Contains(tmplPath, "/transport/grpc/") && g.cfg.Transport == config.TransportHTTP {
+		return false
+	}
+	if strings.Contains(tmplPath, "/transport/httpx/") && g.cfg.Transport == config.TransportGRPC {
+		return false
+	}
+
 	// Infra templates (Docker, K8s, Helm)
 	if strings.Contains(tmplPath, "docker/") && !g.cfg.IncludeDocker {
 		return false
@@ -112,6 +120,14 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 // renderTemplate reads, parses and executes a single .tmpl file,
 // writing the result to the correct output path.
 func (g *Generator) renderTemplate(tmplPath string) error {
+	// Skip go.mod if we are running `init` directly inside an existing project that already has it.
+	if strings.HasSuffix(tmplPath, "go.mod.tmpl") && g.cfg.OutputDir == "." {
+		if _, err := os.Stat("go.mod"); err == nil {
+			fmt.Printf("  - skipping go.mod (already exists)\n")
+			return nil
+		}
+	}
+
 	// Use the fs.ReadFile function (not method) since templateFS is fs.FS
 	content, err := fs.ReadFile(templateFS, tmplPath)
 	if err != nil {
@@ -193,5 +209,7 @@ func templateFuncs() template.FuncMap {
 		"isRabbitMQ": func(b config.BrokerType) bool { return b == config.BrokerRabbitMQ },
 		"isNATS":     func(b config.BrokerType) bool { return b == config.BrokerNATS },
 		"hasBroker":  func(b config.BrokerType) bool { return b != config.BrokerNone && b != "" },
+		"isHTTP":     func(t config.TransportType) bool { return t == config.TransportHTTP || t == config.TransportBoth },
+		"isGRPC":     func(t config.TransportType) bool { return t == config.TransportGRPC || t == config.TransportBoth },
 	}
 }

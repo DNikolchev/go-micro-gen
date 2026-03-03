@@ -17,6 +17,7 @@ var (
 	flagModule    string
 	flagDB        string
 	flagBroker    string
+	flagTransport string
 	flagArch      string
 	flagCI        string
 	flagRedis     bool
@@ -44,6 +45,7 @@ func init() {
 	generateCmd.Flags().StringVar(&flagModule, "module", "", "Go module path (e.g. github.com/acme/order-service)")
 	generateCmd.Flags().StringVar(&flagDB, "db", "", "Database type: postgres | mongo | none")
 	generateCmd.Flags().StringVar(&flagBroker, "broker", "", "Message Broker: kafka | rabbitmq | nats | none")
+	generateCmd.Flags().StringVar(&flagTransport, "transport", "", "Transport protocol: http | grpc | both")
 	generateCmd.Flags().StringVar(&flagArch, "arch", "", "Architecture: clean | hexagonal")
 	generateCmd.Flags().StringVar(&flagCI, "ci", "", "CI/CD: github | gitlab | none")
 	generateCmd.Flags().StringVar(&flagCloud, "cloud", "", "Cloud Provider: aws | gcp | none")
@@ -82,6 +84,9 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := askBroker(cfg); err != nil {
+		return err
+	}
+	if err := askTransport(cfg); err != nil {
 		return err
 	}
 	if err := askRedis(cfg); err != nil {
@@ -200,6 +205,21 @@ func askBroker(cfg *config.ServiceConfig) error {
 	return err
 }
 
+func askTransport(cfg *config.ServiceConfig) error {
+	if flagTransport != "" {
+		cfg.Transport = config.TransportType(flagTransport)
+		return nil
+	}
+	var answer string
+	err := survey.AskOne(&survey.Select{
+		Message: "Transport Protocol:",
+		Options: []string{"http", "grpc", "both"},
+		Default: "http",
+	}, &answer)
+	cfg.Transport = config.TransportType(answer)
+	return err
+}
+
 func askRedis(cfg *config.ServiceConfig) error {
 	if flagRedisSet {
 		cfg.IncludeRedis = flagRedis
@@ -295,6 +315,7 @@ func printSummary(cfg *config.ServiceConfig) {
 	fmt.Printf("  %s  %s\n", bold("Arch:   "), cfg.Architecture)
 	fmt.Printf("  %s  %s\n", bold("DB:     "), cfg.Database)
 	fmt.Printf("  %s  %s\n", bold("Broker: "), cfg.Broker)
+	fmt.Printf("  %s  %s\n", bold("Transp: "), cfg.Transport)
 	fmt.Printf("  %s  %v\n", bold("Redis:  "), cfg.IncludeRedis)
 	fmt.Printf("  %s  %v\n", bold("Docker: "), cfg.IncludeDocker)
 	fmt.Printf("  %s  %v\n", bold("K8s:    "), cfg.IncludeK8s)
