@@ -83,6 +83,9 @@ graph TD
 
 ## Installation
 
+### Method 1: Download Pre-Compiled Binaries (Recommended for Windows & macOS)
+You don't need Go installed! Just go to the [Releases page](https://github.com/Aro-M/go-micro-gen/releases) and download the `.exe` (Windows) or binary (macOS / Linux) specifically for your system. We automatically compile and publish AMD64 and ARM64 (Apple Silicon) versions on every release.
+
 ### Method 1: `go install` (Easiest)
 
 If you have Go installed, you can simply download and install the latest version globally:
