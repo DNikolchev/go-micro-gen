@@ -114,7 +114,7 @@ func main() {
 
 {{- if isHTTP .Transport}}
 	// Initialize HTTP router
-	router := httpx.NewRouter(svc, log)
+	router := httpx.NewRouter(cfg, svc, log)
 
 	// Add health endpoints
 	health.Register(router, cfg)

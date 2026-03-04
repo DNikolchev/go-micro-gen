@@ -8,12 +8,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"{{.ModulePath}}/internal/config"
 	"{{.ModulePath}}/{{.Arch.Domain}}"
 	"{{.ModulePath}}/{{.Arch.Service}}"
 {{- if .IncludeGraphQL}}
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"{{.ModulePath}}/graph"
+{{- end}}
+{{- if .IncludeJWT}}
+	authmw "{{.ModulePath}}/pkg/middleware"
 {{- end}}
 )
 
@@ -24,7 +28,7 @@ type Handler struct {
 }
 
 // NewRouter creates and returns a fully-configured chi router with middleware and routes.
-func NewRouter(svc *service.Service, log *slog.Logger) http.Handler {
+func NewRouter(cfg *config.Config, svc *service.Service, log *slog.Logger) http.Handler {
 	h := &Handler{svc: svc, log: log}
 
 	r := chi.NewRouter()
@@ -49,6 +53,18 @@ func NewRouter(svc *service.Service, log *slog.Logger) http.Handler {
 
 	// Register all routes
 	h.registerRoutes(r)
+
+{{- if .IncludeJWT}}
+	// Protected endpoints featuring JWT Auth and Role Validation
+	r.Group(func(r chi.Router) {
+		r.Use(authmw.Auth(cfg.JWTSecret))
+		r.Use(authmw.RequireRole("admin"))
+
+		r.Get("/protected", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Access Granted to Protected Resource"))
+		})
+	})
+{{- end}}
 
 {{- if .IncludeGraphQL}}
 	// GraphQL endpoints

@@ -24,6 +24,8 @@ var (
 	flagRedisSet   bool
 	flagGraphQL    bool
 	flagGraphQLSet bool
+	flagJWT        bool
+	flagJWTSet     bool
 	flagDocker     bool
 	flagDockerSet  bool
 	flagK8s        bool
@@ -53,6 +55,7 @@ func init() {
 	generateCmd.Flags().StringVar(&flagCloud, "cloud", "", "Cloud Provider: aws | gcp | none")
 	generateCmd.Flags().BoolVar(&flagRedis, "redis", false, "Include Redis")
 	generateCmd.Flags().BoolVar(&flagGraphQL, "graphql", false, "Include GraphQL endpoint")
+	generateCmd.Flags().BoolVar(&flagJWT, "jwt", false, "Include JWT Auth Middleware")
 	generateCmd.Flags().BoolVar(&flagDocker, "docker", false, "Include Docker setup")
 	generateCmd.Flags().BoolVar(&flagK8s, "k8s", false, "Include Kubernetes manifests")
 	generateCmd.Flags().BoolVar(&flagHelm, "helm", false, "Include Helm charts")
@@ -63,6 +66,7 @@ func init() {
 		// Check if flags were explicitly set
 		flagRedisSet = generateCmd.Flags().Changed("redis")
 		flagGraphQLSet = generateCmd.Flags().Changed("graphql")
+		flagJWTSet = generateCmd.Flags().Changed("jwt")
 		flagDockerSet = generateCmd.Flags().Changed("docker")
 		flagK8sSet = generateCmd.Flags().Changed("k8s")
 		flagHelmSet = generateCmd.Flags().Changed("helm")
@@ -97,6 +101,9 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := askGraphQL(cfg); err != nil {
+		return err
+	}
+	if err := askJWT(cfg); err != nil {
 		return err
 	}
 	if err := askDocker(cfg); err != nil {
@@ -268,6 +275,23 @@ func askGraphQL(cfg *config.ServiceConfig) error {
 	return nil
 }
 
+func askJWT(cfg *config.ServiceConfig) error {
+	if flagJWTSet {
+		cfg.IncludeJWT = flagJWT
+		return nil
+	}
+	var res bool
+	prompt := &survey.Confirm{
+		Message: "Include JWT Auth Middleware?",
+		Default: false,
+	}
+	if err := survey.AskOne(prompt, &res); err != nil {
+		return err
+	}
+	cfg.IncludeJWT = res
+	return nil
+}
+
 func askDocker(cfg *config.ServiceConfig) error {
 	if flagDockerSet {
 		cfg.IncludeDocker = flagDocker
@@ -354,6 +378,7 @@ func printSummary(cfg *config.ServiceConfig) {
 	fmt.Printf("  %s  %s\n", bold("Broker: "), cfg.Broker)
 	fmt.Printf("  Transp:   %s\n", color.CyanString(string(cfg.Transport)))
 	fmt.Printf("  GraphQL:  %s\n", color.CyanString(fmt.Sprintf("%t", cfg.IncludeGraphQL)))
+	fmt.Printf("  JWT:      %s\n", color.CyanString(fmt.Sprintf("%t", cfg.IncludeJWT)))
 	fmt.Printf("  Redis:    %s\n", color.CyanString(fmt.Sprintf("%t", cfg.IncludeRedis)))
 	fmt.Printf("  %s  %v\n", bold("Docker: "), cfg.IncludeDocker)
 	fmt.Printf("  %s  %v\n", bold("K8s:    "), cfg.IncludeK8s)

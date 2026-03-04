@@ -143,6 +143,11 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 		return false
 	}
 
+	// JWT Templates
+	if !g.cfg.IncludeJWT && strings.Contains(tmplPath, "/pkg/middleware/auth") {
+		return false
+	}
+
 	// Infra templates (Docker, K8s, Helm)
 	if strings.Contains(tmplPath, "docker/") && !g.cfg.IncludeDocker {
 		return false
