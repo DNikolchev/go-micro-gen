@@ -91,9 +91,9 @@ You don't need Go installed! Just go to the [Releases page](https://github.com/A
 If you have Go installed, you can simply download and install the latest version globally:
 
 ```bash
-GOPROXY=direct go install github.com/Aro-M/go-micro-gen@latest
+go install github.com/Aro-M/go-micro-gen@latest
 ```
-*(Note: `GOPROXY=direct` bypasses Go module proxy caching to guarantee you get the absolute newest updates).*
+*(Note: If Go caches an older version, you can force a fresh download using `GOPROXY=direct go install github.com/Aro-M/go-micro-gen@latest`).*
 
 **✅ Troubleshooting `command not found`:**
 If your terminal says `go-micro-gen: command not found` after a successful installation, your Go bin directory is not in your `$PATH`. 
