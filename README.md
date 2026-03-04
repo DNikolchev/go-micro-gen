@@ -119,6 +119,14 @@ go-micro-gen --version
 go-micro-gen --help
 ```
 
+### Uninstalling
+
+If you ever wish to remove the tool:
+
+```bash
+go-micro-gen uninstall
+```
+
 ---
 
 ## Quick Start

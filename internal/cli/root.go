@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"runtime/debug"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +31,16 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+func getVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok || info.Main.Version == "" || info.Main.Version == "(devel)" {
+		return "dev"
+	}
+	return info.Main.Version
+}
+
 func init() {
+	rootCmd.Version = getVersion()
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(addCmd)
 	rootCmd.AddCommand(initCmd)
