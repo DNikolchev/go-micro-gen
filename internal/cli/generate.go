@@ -28,6 +28,8 @@ var (
 	flagJWTSet        bool
 	flagServerless    bool
 	flagServerlessSet bool
+	flagSeeding       bool
+	flagSeedingSet    bool
 	flagDocker        bool
 	flagDockerSet     bool
 	flagK8s           bool
@@ -59,6 +61,7 @@ func init() {
 	generateCmd.Flags().BoolVar(&flagGraphQL, "graphql", false, "Include GraphQL endpoint")
 	generateCmd.Flags().BoolVar(&flagJWT, "jwt", false, "Include JWT Auth Middleware")
 	generateCmd.Flags().BoolVar(&flagServerless, "serverless", false, "Include Serverless deployment wrappers")
+	generateCmd.Flags().BoolVar(&flagSeeding, "seeding", false, "Include DB mock seeder wrappers")
 	generateCmd.Flags().BoolVar(&flagDocker, "docker", false, "Include Docker setup")
 	generateCmd.Flags().BoolVar(&flagK8s, "k8s", false, "Include Kubernetes manifests")
 	generateCmd.Flags().BoolVar(&flagHelm, "helm", false, "Include Helm charts")
@@ -71,6 +74,7 @@ func init() {
 		flagGraphQLSet = generateCmd.Flags().Changed("graphql")
 		flagJWTSet = generateCmd.Flags().Changed("jwt")
 		flagServerlessSet = generateCmd.Flags().Changed("serverless")
+		flagSeedingSet = generateCmd.Flags().Changed("seeding")
 		flagDockerSet = generateCmd.Flags().Changed("docker")
 		flagK8sSet = generateCmd.Flags().Changed("k8s")
 		flagHelmSet = generateCmd.Flags().Changed("helm")
@@ -111,6 +115,9 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := askServerless(cfg); err != nil {
+		return err
+	}
+	if err := askSeeding(cfg); err != nil {
 		return err
 	}
 	if err := askDocker(cfg); err != nil {
@@ -316,6 +323,27 @@ func askServerless(cfg *config.ServiceConfig) error {
 	return nil
 }
 
+func askSeeding(cfg *config.ServiceConfig) error {
+	if cfg.Database == config.DBNone {
+		cfg.IncludeSeeding = false
+		return nil
+	}
+	if flagSeedingSet {
+		cfg.IncludeSeeding = flagSeeding
+		return nil
+	}
+	var res bool
+	prompt := &survey.Confirm{
+		Message: "Add database seeding script (mock data generation)?",
+		Default: false,
+	}
+	if err := survey.AskOne(prompt, &res); err != nil {
+		return err
+	}
+	cfg.IncludeSeeding = res
+	return nil
+}
+
 func askDocker(cfg *config.ServiceConfig) error {
 	if flagDockerSet {
 		cfg.IncludeDocker = flagDocker
@@ -410,6 +438,9 @@ func printSummary(cfg *config.ServiceConfig) {
 	fmt.Printf("  %s  %s\n", bold("Cloud:  "), cfg.Cloud)
 	if cfg.IncludeServerless {
 		fmt.Printf("  %s  %s\n", bold("S-less: "), color.CyanString("true"))
+	}
+	if cfg.IncludeSeeding {
+		fmt.Printf("  %s  %s\n", bold("Seed:   "), color.CyanString("true"))
 	}
 	fmt.Printf("  %s  %s\n", bold("CI:     "), cfg.CI)
 	fmt.Printf("  %s  %s\n", bold("Output: "), cfg.OutputDir)

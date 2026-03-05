@@ -1,0 +1,50 @@
+package main
+
+import (
+	"context"
+	"log/slog"
+	"os"
+
+	"github.com/brianvoe/gofakeit/v6"
+
+	"{{.ModulePath}}/internal/config"
+	"{{.ModulePath}}/{{.Arch.Domain}}"
+	"{{.ModulePath}}/{{.Arch.Repository}}/{{.Database}}"
+	"{{.ModulePath}}/pkg/logger"
+)
+
+func main() {
+	cfg := config.MustLoad()
+	log := logger.New(cfg.LogLevel)
+	slog.SetDefault(log)
+
+	log.Info("connecting to database...")
+
+	repo, err := {{.Database}}.NewRepository(cfg)
+	if err != nil {
+		log.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	defer repo.Close()
+
+	log.Info("starting database seeding...")
+
+	// Configure gofakeit
+	gofakeit.Seed(0)
+
+	// In a real application, you would create robust factories here. For now, we seed N random records.
+	numRecords := 10
+	for i := 0; i < numRecords; i++ {
+		entity := &domain.Example{
+			ID:   gofakeit.UUID(),
+			Name: gofakeit.Name(),
+		}
+
+		if _, err := repo.Create(context.Background(), entity); err != nil {
+			log.Error("failed to insert mock record", "error", err, "entity_id", entity.ID)
+			continue
+		}
+	}
+
+	log.Info("seeding completed successfully!", "inserted", numRecords)
+}

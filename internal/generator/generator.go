@@ -143,6 +143,13 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 		return false
 	}
 
+	// Database Seeding Template
+	if strings.Contains(tmplPath, "/cmd/seed/") {
+		if !g.cfg.IncludeSeeding || g.cfg.Database == config.DBNone {
+			return false
+		}
+	}
+
 	// JWT Templates
 	if !g.cfg.IncludeJWT && strings.Contains(tmplPath, "/pkg/middleware/auth") {
 		return false

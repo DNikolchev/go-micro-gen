@@ -123,6 +123,8 @@ type ServiceConfig struct {
 	IncludeJWT bool
 	// Whether to include Serverless wrappers
 	IncludeServerless bool
+	// Whether to include DB mock seeder
+	IncludeSeeding bool
 	// Whether to include Docker assets
 	IncludeDocker bool
 	// Whether to include K8s
