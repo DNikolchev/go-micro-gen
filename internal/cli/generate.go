@@ -485,9 +485,6 @@ func printSuccess(cfg *config.ServiceConfig) {
 	if cfg.IncludeGrafana {
 		fmt.Printf("  Grafana:    %s\n", cyan("http://localhost:3000  (admin/admin)"))
 	}
-	if cfg.IncludeDocker {
-		fmt.Printf("  Prometheus: %s\n", cyan("http://localhost:9090"))
-	}
 	if cfg.Transport != config.TransportNone {
 		fmt.Printf("  Service:    %s\n", cyan("http://localhost:8080"))
 	}
