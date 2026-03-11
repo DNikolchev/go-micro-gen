@@ -131,10 +131,13 @@ func (g *Generator) shouldInclude(tmplPath string) bool {
 	}
 
 	// Transport templates
-	if strings.Contains(tmplPath, "/transport/grpc/") && g.cfg.Transport == config.TransportHTTP {
+	if strings.Contains(tmplPath, "/transport/grpc/") && g.cfg.Transport != config.TransportGRPC && g.cfg.Transport != config.TransportBoth {
 		return false
 	}
-	if strings.Contains(tmplPath, "/transport/httpx/") && g.cfg.Transport == config.TransportGRPC {
+	if strings.Contains(tmplPath, "/transport/httpx/") && g.cfg.Transport != config.TransportHTTP && g.cfg.Transport != config.TransportBoth {
+		return false
+	}
+	if strings.Contains(tmplPath, "/pkg/health/") && g.cfg.Transport != config.TransportHTTP && g.cfg.Transport != config.TransportBoth {
 		return false
 	}
 

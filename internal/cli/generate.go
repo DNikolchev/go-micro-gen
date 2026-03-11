@@ -475,7 +475,9 @@ func printSuccess(cfg *config.ServiceConfig) {
 	fmt.Println()
 	fmt.Println("  Next steps:")
 	fmt.Printf("    %s\n", cyan(fmt.Sprintf("cd %s", cfg.OutputDir)))
-	fmt.Printf("    %s\n", cyan("make up          # Start all services with Docker Compose"))
+	if cfg.IncludeDocker {
+		fmt.Printf("    %s\n", cyan("make up          # Start all services with Docker Compose"))
+	}
 	fmt.Printf("    %s\n", cyan("make run         # Run the service locally"))
 	fmt.Printf("    %s\n", cyan("make test        # Run tests"))
 	fmt.Printf("    %s\n", cyan("make lint        # Run golangci-lint"))
@@ -483,8 +485,12 @@ func printSuccess(cfg *config.ServiceConfig) {
 	if cfg.IncludeGrafana {
 		fmt.Printf("  Grafana:    %s\n", cyan("http://localhost:3000  (admin/admin)"))
 	}
-	fmt.Printf("  Prometheus: %s\n", cyan("http://localhost:9090"))
-	fmt.Printf("  Service:    %s\n", cyan("http://localhost:8080"))
+	if cfg.IncludeDocker {
+		fmt.Printf("  Prometheus: %s\n", cyan("http://localhost:9090"))
+	}
+	if cfg.Transport != config.TransportNone {
+		fmt.Printf("  Service:    %s\n", cyan("http://localhost:8080"))
+	}
 	fmt.Println()
 }
 

@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+{{- if or (isHTTP .Transport) (isGRPC .Transport)}}
 	"fmt"
+{{- end}}
 	"log/slog"
 {{- if isHTTP .Transport}}
 	"net/http"
@@ -89,6 +91,11 @@ func main() {
 {{- else}}
 	// Initialize service (no database)
 	svc := service.New(log)
+{{- end}}
+
+{{- if and (eq .Transport "none") (not (hasBroker .Broker))}}
+	// Keep svc imported when no transport and no broker are used
+	_ = svc
 {{- end}}
 
 {{- if hasBroker .Broker}}
